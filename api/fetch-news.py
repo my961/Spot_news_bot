@@ -6,15 +6,21 @@ CHANNEL_ID = "-1004471080700"
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-        payload = {
-            "chat_id": CHANNEL_ID,
-            "text": "⚽ አዲስ የእግር ኳስ ዜና!"
-        }
-        requests.post(url, json=payload)
-
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
-        self.wfile.write('OK'.encode('utf-8'))
+        try:
+            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+            payload = {
+                "chat_id": CHANNEL_ID,
+                "text": "⚽ አዲስ የእግር ኳስ ዜና!"
+            }
+            res = requests.post(url, json=payload)
+            
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(f"ተልኳል! Telegram response: {res.status_code}".encode('utf-8'))
+        except Exception as e:
+            self.send_response(500)
+            self.send_header('Content-type', 'text/plain; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(f"Error: {str(e)}".encode('utf-8'))
         return
