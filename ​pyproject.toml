@@ -4,3 +4,6 @@ version = "0.1.0"
 dependencies = [
     "requests"
 ]
+
+[tool.vercel]
+entrypoint = "api/fetch-news.py:handler"
