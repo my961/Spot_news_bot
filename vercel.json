@@ -1,14 +1,8 @@
 {
-  "builds": [
+  "crons": [
     {
-      "src": "api/fetch-news.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "api/fetch-news.py"
+      "path": "/api/fetch-news",
+      "schedule": "0 * * * *"
     }
   ]
 }
