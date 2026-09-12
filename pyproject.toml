@@ -1,2 +1,2 @@
 [tool.vercel]
-entrypoint = "api/fetch-news.py (variable: handler)"
+entrypoint = "api/fetch-news:handler"
