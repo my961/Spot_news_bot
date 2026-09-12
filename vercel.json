@@ -11,5 +11,11 @@
       "src": "/api/fetch-news",
       "dest": "api/fetch-news.py"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/fetch-news",
+      "schedule": "0 * * * *"
+    }
   ]
 }
