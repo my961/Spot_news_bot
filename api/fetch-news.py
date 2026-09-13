@@ -3,13 +3,19 @@ import json
 import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
+import random
 
 BOT_TOKEN = "8974305013:AAGvuDQDwqPnCBT8pK3Gad2xGnl5auKsMUg"
 CHANNEL_ID = "-1004471080700"
-RSS_URL = "https://feeds.bbci.co.uk/sport/football/rss.xml"
+
+# የተለያዩ የእግር ኳስ ዜና፣ ዝውውር እና የአለም አቀፍ ኳስ ምንጮች
+RSS_FEEDS = [
+    "https://feeds.bbci.co.uk/sport/football/rss.xml",
+    "https://xml.skysports.com/rss/0,20551,11661,00.xml", # SkySports Football
+    "https://www.espn.com/espn/rss/soccer/news"           # ESPN Soccer
+]
 
 def translate_to_amharic(text):
-    """ጽሑፉን በነፃ Google Translate API ወደ አማርኛ ይመልሳል"""
     if not text:
         return ""
     try:
@@ -23,30 +29,37 @@ def translate_to_amharic(text):
         return text
 
 def fetch_rss_news():
-    req = urllib.request.Request(
-        RSS_URL, 
-        headers={'User-Agent': 'Mozilla/5.0'}
-    )
+    selected_feed = random.choice(RSS_FEEDS)
+    req = urllib.request.Request(selected_feed, headers={'User-Agent': 'Mozilla/5.0'})
+    
     with urllib.request.urlopen(req) as response:
         xml_data = response.read()
 
     root = ET.fromstring(xml_data)
-    item = root.find('.//channel/item')
+    items = root.findall('.//channel/item')
     
-    if item is not None:
+    if items:
+        # ከተገኙት ዜናዎች ውስጥ አንዱን በዘፈቀደ መምረጥ
+        item = random.choice(items[:10])
+        
         title_en = item.find('title').text if item.find('title') is not None else ''
         description_en = item.find('description').text if item.find('description') is not None else ''
         
-        # ምስል ከ RSS Feed ውስጥ መፈለግ
+        # ምስል መፈለግ
+        image_url = None
         media = item.find('{http://search.yahoo.com/mrss/}thumbnail')
-        image_url = media.attrib['url'] if media is not None and 'url' in media.attrib else None
+        if media is not None and 'url' in media.attrib:
+            image_url = media.attrib['url']
+        else:
+            enclosure = item.find('enclosure')
+            if enclosure is not None and 'url' in enclosure.attrib:
+                image_url = enclosure.attrib['url']
         
         # ወደ አማርኛ መተርጎም
         title_am = translate_to_amharic(title_en)
         description_am = translate_to_amharic(description_en)
         
-        caption = f"🚨 **የእግር ኳስ ዜና**\n\n📌 **{title_am}**\n\n{description_am}"
-        
+        caption = f"🚨 **የእግር ኳስ ዜናና መረጃ**\n\n📌 **{title_am}**\n\n{description_am}"
         return caption, image_url
     
     return None, None
@@ -58,7 +71,6 @@ class handler(BaseHTTPRequestHandler):
             
             if caption:
                 if image_url:
-                    # ምስል ካለ በ sendPhoto መላክ
                     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendPhoto"
                     payload = json.dumps({
                         "chat_id": CHANNEL_ID,
@@ -67,7 +79,6 @@ class handler(BaseHTTPRequestHandler):
                         "parse_mode": "Markdown"
                     }).encode('utf-8')
                 else:
-                    # ምስል ከሌለ በ sendMessage መላክ
                     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
                     payload = json.dumps({
                         "chat_id": CHANNEL_ID,
