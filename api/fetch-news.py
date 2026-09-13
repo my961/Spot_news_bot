@@ -8,11 +8,10 @@ import random
 BOT_TOKEN = "8974305013:AAGvuDQDwqPnCBT8pK3Gad2xGnl5auKsMUg"
 CHANNEL_ID = "-1004471080700"
 
-# የተለያዩ የእግር ኳስ ዜና፣ ዝውውር እና የአለም አቀፍ ኳስ ምንጮች
 RSS_FEEDS = [
     "https://feeds.bbci.co.uk/sport/football/rss.xml",
-    "https://xml.skysports.com/rss/0,20551,11661,00.xml", # SkySports Football
-    "https://www.espn.com/espn/rss/soccer/news"           # ESPN Soccer
+    "https://xml.skysports.com/rss/0,20551,11661,00.xml",
+    "https://www.espn.com/espn/rss/soccer/news"
 ]
 
 def translate_to_amharic(text):
@@ -39,9 +38,9 @@ def fetch_rss_news():
     items = root.findall('.//channel/item')
     
     if items:
-        # ከተገኙት ዜናዎች ውስጥ አንዱን በዘፈቀደ መምረጥ
         item = random.choice(items[:10])
         
+        # ርዕሱን ሳይተረጎም በእንግሊዝኛ መውሰድ
         title_en = item.find('title').text if item.find('title') is not None else ''
         description_en = item.find('description').text if item.find('description') is not None else ''
         
@@ -55,11 +54,10 @@ def fetch_rss_news():
             if enclosure is not None and 'url' in enclosure.attrib:
                 image_url = enclosure.attrib['url']
         
-        # ወደ አማርኛ መተርጎም
-        title_am = translate_to_amharic(title_en)
+        # ማብራሪያውን ብቻ ወደ አማርኛ መተርጎም
         description_am = translate_to_amharic(description_en)
         
-        caption = f"🚨 **የእግር ኳስ ዜናና መረጃ**\n\n📌 **{title_am}**\n\n{description_am}"
+        caption = f"🚨 **የእግር ኳስ ዜናና መረጃ**\n\n📌 **{title_en}**\n\n{description_am}"
         return caption, image_url
     
     return None, None
